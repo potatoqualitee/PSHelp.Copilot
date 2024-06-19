@@ -36,7 +36,7 @@ function Set-OpenAIProvider {
         ApiBase = "https://your-resource-name.openai.azure.com"
         Deployment = "your-deployment-name"
         ApiType = "Azure"
-        ApiVersion = "2024-05-01-preview"
+        ApiVersion = "2024-04-01-preview"
         AuthType = "azure"
     }
     Set-OpenAIProvider @config
@@ -60,7 +60,7 @@ function Set-OpenAIProvider {
         [ValidateSet("OpenAI", "Azure")]
         [string]$ApiType,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$ApiVersion = "2024-05-01-preview",
+        [string]$ApiVersion = "2024-04-01-preview",
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet("openai", "azure", "azure_ad")]
         [string]$AuthType,
@@ -76,9 +76,10 @@ function Set-OpenAIProvider {
         Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
             '*:ApiKey'       = $ApiKey
             '*:ApiBase'      = $ApiBase
-            '*:ApiVersion'   = $ApiVersion
             '*:AuthType'     = $AuthType
             '*:ApiType'      = $ApiType
+            '*:Deployment'   = $Deployment
+            '*:ApiVersion'   = $ApiVersion
             '*:Organization' = $Organization
         }
 
@@ -87,13 +88,14 @@ function Set-OpenAIProvider {
             try {
                 [pscustomobject]@{
                     ApiKey       = $ApiKey
-                    ApiBase      = $ApiBase
-                    Deployment   = $Deployment
-                    ApiType      = $ApiType
-                    ApiVersion   = $ApiVersion
                     AuthType     = $AuthType
+                    ApiType      = $ApiType
+                    Deployment   = $Deployment
+                    ApiBase      = $ApiBase
+                    ApiVersion   = $ApiVersion
                     Organization = $Organization
                 } | ConvertTo-Json | Set-Content -Path $configFile -Force
+
                 Write-Verbose "OpenAI provider configuration persisted."
             } catch {
                 Write-Error "Error persisting configuration file: $_"
