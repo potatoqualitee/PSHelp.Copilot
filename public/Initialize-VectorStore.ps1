@@ -43,7 +43,7 @@ function Initialize-VectorStore {
                 $moduleVersion = $object.Version.ToString()
             } else {
                 $moduleName = $object
-                $moduleVersion = (Get-Module -Name $moduleName).Version.ToString()
+                $moduleVersion = (Get-Module -Name $moduleName | Select-Object -First 1).Version.ToString()
             }
 
             $localVectorStoreFiles = Get-LocalVectorStoreFile -Module $moduleName -ErrorAction SilentlyContinue
@@ -119,7 +119,7 @@ function Initialize-VectorStore {
 
                 Write-Verbose "Uploading $($commandfiles.Count) files"
 
-                $uploads = Get-ChildItem $commandfiles | Register-OpenAIFile -Purpose "assistants"
+                $uploads = Get-ChildItem $commandfiles | Add-OpenAIFile -Purpose "assistants"
                 $filebatch = PSOpenAI\Start-VectorStoreFileBatch -VectorStore $vectorStore -FileId $uploads.id
                 $null = PSOpenAI\Wait-VectorStoreFileBatch -VectorStore $vectorStore -BatchId $filebatch.id
                 Write-Verbose "Uploaded batch $($i + 1) of $batches to vector store: $storename"
