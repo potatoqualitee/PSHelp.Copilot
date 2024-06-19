@@ -30,8 +30,7 @@ function Get-OpenAIProvider {
 
     if ($Persisted) {
         if (Test-Path -Path $configFile) {
-            $config = Get-Content -Path $configFile -Raw | ConvertFrom-Json
-            Write-Output $config
+            Get-Content -Path $configFile -Raw | ConvertFrom-Json
         } else {
             Write-Warning "No persisted configuration found."
         }
@@ -43,12 +42,13 @@ function Get-OpenAIProvider {
                 $maskedkey = $null
             }
 
-            [PSCustomObject]@{
+            [pscustomobject]@{
                 ApiKey       = $maskedkey
-                ApiBase      = $PSDefaultParameterValues["*:ApiBase"]
-                ApiVersion   = $PSDefaultParameterValues["*:ApiVersion"]
                 AuthType     = $PSDefaultParameterValues["*:AuthType"]
                 ApiType      = $PSDefaultParameterValues["*:ApiType"]
+                Deployment   = $PSDefaultParameterValues["*:Deployment"]
+                ApiBase      = $PSDefaultParameterValues["*:ApiBase"]
+                ApiVersion   = $PSDefaultParameterValues["*:ApiVersion"]
                 Organization = $PSDefaultParameterValues["*:Organization"]
             }
         } else {
@@ -58,12 +58,13 @@ function Get-OpenAIProvider {
             } else {
                 $auth = $null
             }
-            [PSCustomObject]@{
+            [pscustomobject]@{
                 ApiKey       = $maskedkey
-                ApiBase      = $null
-                ApiVersion   = $null
                 AuthType     = $auth
                 ApiType      = $auth
+                Deployment   = $null
+                ApiBase      = $null
+                ApiVersion   = $null
                 Organization = $null
             }
         }
