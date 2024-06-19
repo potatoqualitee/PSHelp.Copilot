@@ -60,7 +60,7 @@ function Set-OpenAIProvider {
         [ValidateSet("OpenAI", "Azure")]
         [string]$ApiType,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$ApiVersion = "2024-04-01-preview",
+        [string]$ApiVersion,
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet("openai", "azure", "azure_ad")]
         [string]$AuthType,
@@ -72,19 +72,42 @@ function Set-OpenAIProvider {
         if (-not $AuthType) {
             $AuthType = if ($ApiType -eq 'Azure') { 'Azure' } else { 'OpenAI' }
         }
-
-        Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
-            '*:ApiKey'       = $ApiKey
-            '*:ApiBase'      = $ApiBase
-            '*:AuthType'     = $AuthType
-            '*:ApiType'      = $ApiType
-            '*:Deployment'   = $Deployment
-            '*:ApiVersion'   = $ApiVersion
-            '*:Organization' = $Organization
+        if (-not $ApiKey) {
+            $ApiKey = Get-ApiKey -PlainText
         }
 
+        if ($ApiType -eq 'Azure') {
+            # Set context for Azure
+            $splat = @{
+                ApiType  = 'Azure'
+                AuthType = $AuthType
+                ApiKey   = $ApiKey
+                ApiBase  = $ApiBase
+            }
+            if ($Organization) {
+                $splat.Organization = $Organization
+            }
+            if ($ApiVersion) {
+                $splat.ApiVersion = $ApiVersion
+            }
+            if ($Deployment) {
+                Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
+                    '*:Deployment' = $Deployment
+                    '*:Model'      = $Deployment
+                }
+            }
+        } else {
+            # Set context for OpenAI
+            $splat = @{
+                ApiType  = 'OpenAI'
+                AuthType = $AuthType
+                ApiKey   = $ApiKey
+            }
+        }
+        $null = Set-OpenAIContext @splat
+
         if (-not $NoPersist) {
-            $configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
+            $configFile = Join-Path -Path $script:configdir -ChildPath config.json
             try {
                 [pscustomobject]@{
                     ApiKey       = $ApiKey

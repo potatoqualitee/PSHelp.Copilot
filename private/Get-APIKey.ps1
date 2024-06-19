@@ -29,25 +29,6 @@ function Get-MaskedString {
     return $maskedString
 }
 
-
-function DecryptSecureString {
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory, Position = 0)]
-        [securestring]$SecureString
-    )
-    try {
-        $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
-        $PlainToken = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
-        $PlainToken
-    } catch {
-        Write-Error -Exception $_.Exception
-    } finally {
-        $bstr = $PlainToken = $null
-    }
-}
-
 # this is a modified function that surfaces the API key that PSOpenAI will use
 function Get-APIKey {
     [CmdletBinding()]
@@ -55,7 +36,8 @@ function Get-APIKey {
     Param(
         [Parameter(Position = 0)]
         [AllowNull()]
-        [System.Management.Automation.PSObjectPropertyDescriptor]$ApiKey
+        [System.Management.Automation.PSObjectPropertyDescriptor]$ApiKey,
+        [switch]$PlainText
     )
 
     # Search API key below priorities.
@@ -76,7 +58,11 @@ function Get-APIKey {
     }
 
     if ($key -is [securestring]) {
-        $key = DecryptSecureString $key
+        $key = Get-DecryptedString $key
+    }
+
+    if ($PlainText) {
+        return $key
     }
 
     if ($key) {

@@ -30,26 +30,30 @@ function Get-OpenAIProvider {
 
     if ($Persisted) {
         if (Test-Path -Path $configFile) {
-            $config = Get-Content -Path $configFile -Raw | ConvertFrom-Json
-            Write-Output $config
+            Get-Content -Path $configFile -Raw | ConvertFrom-Json
         } else {
             Write-Warning "No persisted configuration found."
         }
     } else {
-        if ($PSDefaultParameterValues["*:ApiBase"]) {
-            if ($PSDefaultParameterValues["*:ApiKey"]) {
-                $maskedkey = Get-MaskedString -Source $PSDefaultParameterValues["*:ApiKey"] -First $first -Last 2 -MaxNumberOfAsterisks 45
-            } else {
-                $maskedkey = $null
+        $context = Get-OpenAIContext
+        if ($context.ApiBase) {
+            if ($context.ApiKey) {
+                $decryptedkey = Get-DecryptedString -SecureString $context.ApiKey
+                if ($decryptedkey) {
+                    $maskedkey = Get-MaskedString -Source $decryptedkey -First $first -Last 2 -MaxNumberOfAsterisks 45
+                } else {
+                    $maskedkey = $null
+                }
             }
 
-            [PSCustomObject]@{
+            [pscustomobject]@{
                 ApiKey       = $maskedkey
-                ApiBase      = $PSDefaultParameterValues["*:ApiBase"]
-                ApiVersion   = $PSDefaultParameterValues["*:ApiVersion"]
-                AuthType     = $PSDefaultParameterValues["*:AuthType"]
-                ApiType      = $PSDefaultParameterValues["*:ApiType"]
-                Organization = $PSDefaultParameterValues["*:Organization"]
+                AuthType     = $context.AuthType
+                ApiType      = $context.ApiType
+                Deployment   = $PSDefaultParameterValues['*:Deployment']
+                ApiBase      = $context.ApiBase
+                ApiVersion   = $context.ApiVersion
+                Organization = $context.Organization
             }
         } else {
             $maskedkey = Get-ApiKey
@@ -58,12 +62,13 @@ function Get-OpenAIProvider {
             } else {
                 $auth = $null
             }
-            [PSCustomObject]@{
+            [pscustomobject]@{
                 ApiKey       = $maskedkey
-                ApiBase      = $null
-                ApiVersion   = $null
                 AuthType     = $auth
                 ApiType      = $auth
+                Deployment   = $null
+                ApiBase      = $null
+                ApiVersion   = $null
                 Organization = $null
             }
         }

@@ -36,8 +36,7 @@ function New-ModuleAssistant {
         <ModuleName> v<ModuleVersion>.
 
     .PARAMETER Force
-        A switch to force the recreation of the assistant and the associated vector store
-        if they already exist.
+        A switch to force the recreation of the assistant and the associated vector store if they already exist.
 
     .EXAMPLE
         PS C:\> New-ModuleAssistant -Module dbatools -AssistantName "dbatools Copilot" -Model gpt-4o
@@ -92,12 +91,24 @@ function New-ModuleAssistant {
         [string]$Description,
         [string]$Instructions,
         [string]$AdditionalInstructions,
-        [string]$Model = "gpt-4o",
+        [string]$Model,
         [Parameter(ValueFromPipelineByPropertyName)]
         [string]$VectorStore,
         [switch]$Force
     )
     process {
+        if (-not $PSBoundParameters.Model) {
+            $provider = Get-OpenAIProvider
+            if ($provider.ApiType -ne "Azure") {
+                $Model = "gpt-4o"
+            } else {
+                if (-not $provider.Deployment) {
+                    throw "Model is required for Azure API type."
+                }
+                $Model = $provider.Deployment
+            }
+        }
+
         if ($Force) {
             $PSDefaultParameterValues['*:Force'] = $true
         }
@@ -108,7 +119,7 @@ function New-ModuleAssistant {
         foreach ($moduleName in $Module) {
             Write-Verbose "Creating assistant for module: $moduleName"
             $null = Import-Module $moduleName -Force -ErrorAction Stop
-            $moduleversion = (Get-Module $moduleName).Version.ToString()
+            $moduleversion = (Get-Module $moduleName | Select-Object -First 1).Version.ToString()
             $assistant = $AssistantName -replace '--MODULENAME--', $moduleName
 
             if ($Force) {
