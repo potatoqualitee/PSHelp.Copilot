@@ -121,7 +121,7 @@ function Initialize-VectorStore {
 
                 $uploads = Get-ChildItem $commandfiles | Register-OpenAIFile -Purpose "assistants"
                 $filebatch = PSOpenAI\Start-VectorStoreFileBatch -VectorStore $vectorStore -FileId $uploads.id
-                $null = PSOpenAI\Wait-VectorStoreFileBatch -VectorStore $vectorStore -BatchId $filebatch.id -StatusForWait ('queued', 'in_progress', 'cancelling')
+                $null = PSOpenAI\Wait-VectorStoreFileBatch -VectorStore $vectorStore -BatchId $filebatch.id
                 Write-Verbose "Uploaded batch $($i + 1) of $batches to vector store: $storename"
                 Start-Sleep 10
 
