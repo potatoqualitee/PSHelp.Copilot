@@ -36,8 +36,7 @@ function New-ModuleAssistant {
         <ModuleName> v<ModuleVersion>.
 
     .PARAMETER Force
-        A switch to force the recreation of the assistant and the associated vector store
-        if they already exist.
+        A switch to force the recreation of the assistant and the associated vector store if they already exist.
 
     .EXAMPLE
         PS C:\> New-ModuleAssistant -Module dbatools -AssistantName "dbatools Copilot" -Model gpt-4o
