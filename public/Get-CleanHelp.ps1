@@ -15,6 +15,9 @@ function Get-CleanHelp {
     .PARAMETER As
         Specifies the output format. Can be "PSObject" or "String". The default is "PSObject".
 
+    .PARAMETER NoProgress
+        Suppresses the progress bar.
+
     .EXAMPLE
         PS C:\> Get-CleanHelp -Command Get-Process
 
@@ -37,10 +40,15 @@ function Get-CleanHelp {
         [psobject[]]$Command,
         [string]$Module,
         [ValidateSet("PSObject", "String")]
-        [string]$As = "PSObject"
+        [string]$As = "PSObject",
+        [switch]$NoProgress
     )
     begin {
         $all = @()
+        if ($NoProgress) {
+            # shut it up
+            function Write-Progress {}
+        }
     }
     process {
         if ($Module) {
