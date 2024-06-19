@@ -1,0 +1,33 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Cache PowerShell modules
+      id: cache-psmodules
+      uses: potatoqualitee/psmodulecache@v5.2
+      with:
+        modules-to-cache: PSOpenAI
+
+    - name: Run tests
+      shell: pwsh
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        # $testResult = Invoke-Pester -Path "./tests/PSHelp.Copilot.Tests.ps1" -PassThru
+        if ($testResult.FailedCount -gt 0) {
+            throw "$($testResult.FailedCount) tests failed."
+        }
