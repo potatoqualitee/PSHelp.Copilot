@@ -107,7 +107,7 @@ function New-ModuleAssistant {
         foreach ($moduleName in $Module) {
             Write-Verbose "Creating assistant for module: $moduleName"
             $null = Import-Module $moduleName -Force -ErrorAction Stop
-            $moduleversion = (Get-Module $moduleName).Version.ToString()
+            $moduleversion = (Get-Module $moduleName | Select-Object -First 1).Version.ToString()
             $assistant = $AssistantName -replace '--MODULENAME--', $moduleName
 
             if ($Force) {
