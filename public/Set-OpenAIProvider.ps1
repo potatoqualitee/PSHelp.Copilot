@@ -83,8 +83,32 @@ function Set-OpenAIProvider {
             '*:Organization' = $Organization
         }
 
+        if ($ApiType -eq 'Azure') {
+            # Set context for Azure
+            $splat = @{
+                ApiType  = 'Azure'
+                AuthType = $AuthType
+                ApiKey   = $ApiKey
+                ApiBase  = $ApiBase
+            }
+            if ($Organization) {
+                $splat.Organization = $Organization
+            }
+            if ($ApiVersion) {
+                $splat.ApiVersion = $ApiVersion
+            }
+        } else {
+            # Set context for OpenAI
+            $splat = @{
+                ApiType  = 'OpenAI'
+                AuthType = $AuthType
+                ApiKey   = $ApiKey
+            }
+        }
+        $null = Set-OpenAIContext @splat
+
         if (-not $NoPersist) {
-            $configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
+            $configFile = Join-Path -Path $script:configdir -ChildPath config.json
             try {
                 [pscustomobject]@{
                     ApiKey       = $ApiKey

@@ -50,9 +50,18 @@ Set-Variable -Scope 0 -Name PSDefaultParameterValues -Force -ErrorAction Silentl
 $configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
 
 if (Test-Path -Path $configFile) {
-    #$null = Get-Content -Path $configFile -Raw | ConvertFrom-Json | Set-OpenAIProvider
+    $persisted = Get-Content -Path $configFile -Raw | ConvertFrom-Json
+    $splat = @{
+        ApiKey       = $persisted.ApiKey
+        ApiBase      = $persisted.ApiBase
+        Deployment   = $persisted.Deployment
+        ApiType      = $persisted.ApiType
+        ApiVersion   = $persisted.ApiVersion
+        AuthType     = $persisted.AuthType
+        Organization = $persisted.Organization
+    }
 } elseif ($env:OPENAI_API_TYPE) {
-   $params = @{
+    $splat = @{
         ApiKey       = $env:OPENAI_API_KEY
         ApiBase      = $env:OPENAI_API_BASE
         Deployment   = $env:OPENAI_AZURE_DEPLOYMENT
@@ -61,5 +70,5 @@ if (Test-Path -Path $configFile) {
         AuthType     = if ($env:OPENAI_API_TYPE -match 'azure') { 'azure' } else { 'openai' }
         Organization = $env:OPENAI_AZURE_ORGANIZATION
     }
-    $null = Set-OpenAIProvider @params
 }
+$null = Set-OpenAIProvider @splat

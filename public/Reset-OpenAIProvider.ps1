@@ -33,6 +33,7 @@ function Reset-OpenAIProvider {
     if (Test-Path -Path $configFile) {
         Remove-Item -Path $configFile -Force
     }
+    $null = Clear-OpenAIContext
 
     Write-Verbose "OpenAI provider configuration reset to default."
     Get-OpenAIProvider
