@@ -57,8 +57,10 @@ function Initialize-VectorStore {
                 Write-Verbose "Created new vector store: $storename"
             }
 
-            if (-not $vectorStore.id) {
-                throw "Vector store could not be created: $storename"
+            while ($vectorstore.status -ne 'completed') {
+                Start-Sleep -Seconds 1
+                $vectorStore = Get-VectorStore -VectorStoreId $vectorStore.id
+                Write-Verbose "Waiting for vector store to be ready...(file_counts are completed). Current status: $($vectorstore.status)"
             }
 
             if ($localVectorStoreFiles -and -not $Force) {
@@ -119,11 +121,20 @@ function Initialize-VectorStore {
 
                 Write-Verbose "Uploading $($commandfiles.Count) files"
 
-                $uploads = Get-ChildItem $commandfiles | Add-OpenAIFile -Purpose "assistants"
+                $uploads = Get-ChildItem $commandfiles | PSOpenAI\Add-OpenAIFile -Purpose "assistants"
                 $filebatch = PSOpenAI\Start-VectorStoreFileBatch -VectorStore $vectorStore -FileId $uploads.id
-                $null = PSOpenAI\Wait-VectorStoreFileBatch -VectorStore $vectorStore -BatchId $filebatch.id
+                # Define the parameters for splatting
+                $splats = @{
+                    VectorStoreId = $vectorStore.id
+                    BatchId       = $filebatch.id
+                    ErrorAction   = 'SilentlyContinue'
+                }
+
+                # Check if $filebatch.id is not null or empty
+                if ($filebatch.id) {
+                    $null = PSOpenAI\Wait-VectorStoreFileBatch @splats
+                }
                 Write-Verbose "Uploaded batch $($i + 1) of $batches to vector store: $storename"
-                Start-Sleep 10
 
                 $count += $batchobjects.Count
 

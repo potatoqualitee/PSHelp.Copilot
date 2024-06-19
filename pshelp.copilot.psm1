@@ -38,28 +38,33 @@ foreach ($function in (Get-ChildItem "$ModuleRoot\public" -Filter "*.ps1" -Recur
 
 Set-Alias -Name askhelp -Value Invoke-HelpChat
 
-Set-Variable -Scope 0 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
-    '*:ApiKey'       = $null
-    '*:ApiBase'      = $null
-    '*:ApiVersion'   = $null
-    '*:AuthType'     = 'openai'
-    '*:ApiType'      = 'openai'
-    '*:Organization' = $null
-}
-
 $configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
 
 if (Test-Path -Path $configFile) {
     $persisted = Get-Content -Path $configFile -Raw | ConvertFrom-Json
-    $splat = @{
-        ApiKey       = $persisted.ApiKey
-        ApiBase      = $persisted.ApiBase
-        Deployment   = $persisted.Deployment
-        ApiType      = $persisted.ApiType
-        ApiVersion   = $persisted.ApiVersion
-        AuthType     = $persisted.AuthType
-        Organization = $persisted.Organization
+    $splat = @{}
+    if ($persisted.ApiKey) {
+        $splat.ApiKey = $persisted.ApiKey
     }
+    if ($persisted.ApiBase) {
+        $splat.ApiBase = $persisted.ApiBase
+    }
+    if ($persisted.Deployment) {
+        $splat.Deployment = $persisted.Deployment
+    }
+    if ($persisted.ApiType) {
+        $splat.ApiType = $persisted.ApiType
+    }
+    if ($persisted.ApiVersion) {
+        $splat.ApiVersion = $persisted.ApiVersion
+    }
+    if ($persisted.AuthType) {
+        $splat.AuthType = $persisted.AuthType
+    }
+    if ($persisted.Organization) {
+        $splat.Organization = $persisted.Organization
+    }
+
 } elseif ($env:OPENAI_API_TYPE) {
     $splat = @{
         ApiKey       = $env:OPENAI_API_KEY
@@ -72,3 +77,6 @@ if (Test-Path -Path $configFile) {
     }
 }
 $null = Set-OpenAIProvider @splat
+
+$PSDefaultParameterValues['Import-Module:Verbose'] = $false
+$PSDefaultParameterValues['Add-Type:Verbose'] = $false

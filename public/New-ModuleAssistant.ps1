@@ -91,12 +91,24 @@ function New-ModuleAssistant {
         [string]$Description,
         [string]$Instructions,
         [string]$AdditionalInstructions,
-        [string]$Model = "gpt-4o",
+        [string]$Model,
         [Parameter(ValueFromPipelineByPropertyName)]
         [string]$VectorStore,
         [switch]$Force
     )
     process {
+        if (-not $PSBoundParameters.Model) {
+            $provider = Get-OpenAIProvider
+            if ($provider.ApiType -ne "Azure") {
+                $Model = "gpt-4o"
+            } else {
+                if (-not $provider.Deployment) {
+                    throw "Model is required for Azure API type."
+                }
+                $Model = $provider.Deployment
+            }
+        }
+
         if ($Force) {
             $PSDefaultParameterValues['*:Force'] = $true
         }

@@ -60,7 +60,7 @@ function Set-OpenAIProvider {
         [ValidateSet("OpenAI", "Azure")]
         [string]$ApiType,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$ApiVersion = "2024-04-01-preview",
+        [string]$ApiVersion,
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet("openai", "azure", "azure_ad")]
         [string]$AuthType,
@@ -72,15 +72,8 @@ function Set-OpenAIProvider {
         if (-not $AuthType) {
             $AuthType = if ($ApiType -eq 'Azure') { 'Azure' } else { 'OpenAI' }
         }
-
-        Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
-            '*:ApiKey'       = $ApiKey
-            '*:ApiBase'      = $ApiBase
-            '*:AuthType'     = $AuthType
-            '*:ApiType'      = $ApiType
-            '*:Deployment'   = $Deployment
-            '*:ApiVersion'   = $ApiVersion
-            '*:Organization' = $Organization
+        if (-not $ApiKey) {
+            $ApiKey = Get-ApiKey -PlainText
         }
 
         if ($ApiType -eq 'Azure') {
@@ -96,6 +89,12 @@ function Set-OpenAIProvider {
             }
             if ($ApiVersion) {
                 $splat.ApiVersion = $ApiVersion
+            }
+            if ($Deployment) {
+                Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
+                    '*:Deployment' = $Deployment
+                    '*:Model'      = $Deployment
+                }
             }
         } else {
             # Set context for OpenAI
