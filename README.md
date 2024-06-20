@@ -325,6 +325,16 @@ Test-Dbapath -SqlINstance sql01 -Path "C:\temp\spaces require\quotes\for example
 \```
 ```
 
+# Custom GPTs made using PSHelp.Copilot
+
+- **PowerShell Splatter** - [gptmaker.dev/splat](https://gptmaker.dev/splat)
+- **dbatools help** - [gptmaker.dev/dbatools](https://gptmaker.dev/dbatools)
+- **Pester Copilot** - [gptmaker.dev/pester](https://gptmaker.dev/pester)
+- **PowerShell Universal Copilot** - [gptmaker.dev/psu](https://gptmaker.dev/psu)
+- **PSOpenAI Copilot** - [gptmaker.dev/psopenai](https://gptmaker.dev/psopenai)
+- **HelpOut** - [gptmaker.dev/helpout](https://gptmaker.dev/helpout)
+- **PSHelp.Copilot Copilot** - [gptmaker.dev/pshelp](https://gptmaker.dev/pshelp)
+
 # Todo
 
 * Create tests with RAG pipeline
