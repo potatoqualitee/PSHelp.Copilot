@@ -46,11 +46,6 @@ function Invoke-HelpChat {
         PS C:\> Invoke-HelpChat List all SQL Server instances -Module dbatools -AddHint
 
         Demonstrates using the function without quotes around the message and with the AddHint parameter for enhanced context.
-
-    .NOTES
-        - The function requires setting up an OpenAI API key or Azure OpenAI service configuration.
-        - Use Set-ModuleAssistant to set a default module for easier repeated queries.
-        - The AddHint parameter can improve response quality but may increase token usage.
     #>
     [CmdletBinding()]
     param (
