@@ -1,65 +1,57 @@
 function Invoke-HelpChat {
     <#
     .SYNOPSIS
-        Initiates a chat interaction with an agent.
+        Initiates a chat interaction with an AI assistant for PowerShell module help.
 
     .DESCRIPTION
-        Sends a message to an agent and retrieves the response. It supports additional options such as embedding hints and returning the response in different formats.
+        Invoke-HelpChat sends a message to an AI assistant specialized in a specific PowerShell module and retrieves the response. It supports various options such as embedding hints and returning the response in different formats. This function leverages OpenAI's language models to provide intelligent, context-aware help for PowerShell modules.
 
     .PARAMETER Message
-        The message to send to the agent. Accepts input from the pipeline.
+        The message or question to send to the assistant. Accepts input from the pipeline and can be provided without quotes.
 
     .PARAMETER Module
-        The name of the module to interact with. If provided, the assistant name will be generated as "<Module> Copilot".
+        The name of the PowerShell module to get help for. If provided, the assistant name will be automatically generated as "<Module> Copilot".
 
     .PARAMETER AssistantName
-        The name of the assistant to interact with. If not provided, the Module parameter must be specified.
+        The specific name of the assistant to interact with. If not provided, the Module parameter must be specified.
 
     .PARAMETER As
-        Specifies the format of the response. Valid values are String and PSObject. Defaults to String.
+        Specifies the format of the response. Valid values are 'String' and 'PSObject'. Defaults to 'String'.
+        - String: Returns the assistant's response as a simple string.
+        - PSObject: Returns a detailed object including the question, answer, and token usage information.
 
     .PARAMETER AddHint
-        Adds embedding hints to the interaction, which can enhance the response quality.
+        Adds embedding hints to the interaction, which can enhance the response quality by providing more context to the AI model.
 
     .PARAMETER NoYell
-        Suppresses the "USE YOUR RETRIEVAL DOCUMENTS!!!" message that is appended to the user message.
+        Suppresses the "USE YOUR RETRIEVAL DOCUMENTS!!!" message that is normally appended to the user message.
 
     .EXAMPLE
-        PS C:\> Invoke-HelpChat -Message "How do I backup a database?" -Module dbatools
+        PS C:\> Set-ModuleAssistant -Module dbatools
+        PS C:\> askhelp how do I backup a database?
 
-        Sends the message "How do I backup a database?" to the "dbatools Copilot" assistant and retrieves the response.
+        Sets dbatools as the default module and uses the askhelp alias to ask about database backups.
 
     .EXAMPLE
-        PS C:\> # Create an assistant for the Microsoft.PowerShell.Management module
-        PS C:\> New-ModuleAssistant -Module Microsoft.PowerShell.Management
+        PS C:\> Invoke-HelpChat "How can I copy files recursively?" -Module Microsoft.PowerShell.Management -As PSObject
 
-        PS C:\> # Set default values for Invoke-HelpChat parameters
-        PS C:\> $PSDefaultParameterValues = @{
-        >>     'Invoke-HelpChat:Module'  = 'Microsoft.PowerShell.Management'
-        >>     'Invoke-HelpChat:AddHint' = $true
-        >> }
-
-        PS C:\> # Ask a question about copying files
-        PS C:\> askhelp how can I copy files recursively?
-
-        Creates an assistant for the Microsoft.PowerShell.Management module, sets default parameter values for Invoke-HelpChat, and asks a question about copying files recursively using the askhelp alias.
+        Asks about copying files recursively in the Microsoft.PowerShell.Management module and returns a detailed PSObject response.
 
     .EXAMPLE
         PS C:\> "Generate an AI summary of this text" | Invoke-HelpChat -AssistantName "PSOpenAI Assistant"
 
-        Sends the message "Generate an AI summary of this text" to the "PSOpenAI Assistant" using pipeline input and retrieves the response.
+        Uses pipeline input to send a request to a specific assistant named "PSOpenAI Assistant".
 
     .EXAMPLE
-        PS C:\> Invoke-HelpChat -Message "How can I manage endpoints?" -AssistantName "Universal Assistant" -As PSObject
+        PS C:\> Invoke-HelpChat List all SQL Server instances -Module dbatools -AddHint
 
-        Sends the message "How can I manage endpoints?" to the "Universal Assistant" and retrieves the response as a PSObject.
+        Demonstrates using the function without quotes around the message and with the AddHint parameter for enhanced context.
 
-    .EXAMPLE
-        PS C:\> Invoke-HelpChat -Message "List all SQL Server instances" -Module dbatools -AddHint
-
-        Sends the message "List all SQL Server instances" to the "dbatools Copilot" assistant with embedding hints and retrieves the response.
-#>
-
+    .NOTES
+        - The function requires setting up an OpenAI API key or Azure OpenAI service configuration.
+        - Use Set-ModuleAssistant to set a default module for easier repeated queries.
+        - The AddHint parameter can improve response quality but may increase token usage.
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromRemainingArguments, ValueFromPipeline, Position = 0)]
@@ -121,6 +113,11 @@ function Invoke-HelpChat {
         }
 
         $thread = $script:threadcache[$hashkey].thread
+        if ($script:threadcache[$hashkey].assistant.model) {
+            Write-Verbose "Using model $($script:threadcache[$hashkey].assistant.model)"
+            $PSDefaultParameterValues['*:Model'] = $script:threadcache[$hashkey].assistant.model
+            $PSDefaultParameterValues['*:Deployment'] = $script:threadcache[$hashkey].assistant.model
+        }
         $totalMessages = $Message.Count
         $processedMessages = 0
         $sentence = @()
@@ -189,6 +186,21 @@ function Invoke-HelpChat {
 
             $response = Start-ThreadRun @params -Outvariable run | Receive-ThreadRun -Wait
 
+            while ($msg -eq $response.Messages[-1].SimpleContent.Content) {
+                # azure FAQ - up quota, pick module
+                Write-Warning "Ran into an issue, retrying..."
+
+                $response = Get-ThreadRun -ThreadId $thread.id
+                if ($response.last_error.code -eq "rate_limit_exceeded") {
+                    $sleep = $response.last_error.message -replace '\D'
+                    Write-Warning "Rate limit exceeded, sleeping for $sleep seconds..."
+                    Write-Warning "If using Azure, consider increasing your quota"
+                    Start-Sleep -Seconds ($sleep + 1)
+                } else {
+                    # extract error and throw
+                    throw $response.last_error.message
+                }
+            }
             if ($As -eq "String") {
                 $response.Messages[-1].SimpleContent.Content
             } elseif ($As -eq "PSObject") {

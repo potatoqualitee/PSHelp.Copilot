@@ -4,6 +4,27 @@ PSHelp.Copilot is a PowerShell module that simplifies getting help from well-doc
 
 To use PSHelp.Copilot, you'll need an OpenAI API key, which can be obtained by signing up for an account with OpenAI or through an OpenAI-powered service like Azure OpenAI Services.
 
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+- [Usage](#usage)
+  - [Creating a Module Assistant](#creating-a-module-assistant)
+  - [Chatting with a Module Assistant](#chatting-with-a-module-assistant)
+  - [Setting the OpenAI Provider](#setting-the-openai-provider)
+  - [Managing Module Assistants](#managing-module-assistants)
+  - [Creating CustomGPTs without API Assistants](#creating-customgpts-without-api-assistants)
+  - [Integration with PSOpenAI](#integration-with-psopenai)
+- [Examples](#examples)
+- [Configuration](#configuration)
+  - [Persisting OpenAI Provider Configuration](#persisting-openai-provider-configuration)
+  - [Resetting OpenAI Provider Configuration](#resetting-openai-provider-configuration)
+  - [Automatic Configuration on Module Import](#automatic-configuration-on-module-import)
+- [Azure FAQ](#azure-faq)
+- [Todo](#todo)
+- [Example Instructions for CustomGPTs](#example-instructions-for-customgpts)
+
 ## Features
 
 - Convert PowerShell help documentation to an AI-friendly format
@@ -193,6 +214,18 @@ This command will remove the persisted configuration file and clear the relevant
 ### Automatic Configuration on Module Import
 
 When importing the PSHelp.Copilot module, it automatically checks for a persisted configuration file. If found, it sets the OpenAI provider configuration accordingly. If no persisted configuration is found, it checks for environment variables and sets the configuration based on those.
+
+## Azure FAQ
+
+1. **Default Quota**: The default quota for Azure OpenAI services is relatively low. If you're experiencing limitations, consider requesting an increase in your quota through the Azure portal.
+
+2. **Assistant Not Working**: If your assistant isn't working as expected, try changing the model in your deployment. This module was primarily tested with the `gpt-4o` model. Ensure your deployment is using a compatible model.
+
+3. **API Versions**: Make sure you're using a compatible API version. The module is designed to work with recent API versions, but Azure OpenAI Services may update their API. Check the Azure documentation for the latest supported versions.
+
+4. **Deployment Name**: When setting up the OpenAI provider for Azure, ensure you're using the correct deployment name. This is different from the model name and is specific to your Azure OpenAI resource.
+
+5. **Region Availability**: Azure OpenAI services may not be available in all Azure regions. Ensure you're using a supported region for your deployment.
 
 # Todo
 
