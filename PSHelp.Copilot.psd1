@@ -3,7 +3,7 @@
     RootModule           = 'PSHelp.Copilot.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '1.0.0'
+    ModuleVersion        = '1.0.1'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core', 'Desktop')
@@ -87,7 +87,7 @@
             ProjectUri = 'https://github.com/potatoqualitee/PSHelp.Copilot'
 
             # A URL to an icon representing this module.
-            IconUri    = 'https://github.com/potatoqualitee/finetuna/assets/8278033/b6e12c36-afd2-46a1-8024-a9fd12c9b773'
+            IconUri    = 'https://github.com/potatoqualitee/PSHelp.Copilot/blob/main/logo.png?raw=true'
 
         }
     }
