@@ -4,6 +4,13 @@ PSHelp.Copilot is a PowerShell module that simplifies getting help from well-doc
 
 To use PSHelp.Copilot, you'll need an OpenAI API key, which can be obtained by signing up for an account with OpenAI or through an OpenAI-powered service like Azure OpenAI Services.
 
+Then all you have to do is this:
+
+```powershell
+PS> New-ModuleAssistant -Module dbatools
+PS> askhelp how do i encrypt all of my databases at once?
+```
+
 ## Table of Contents
 
 - [Features](#features)
