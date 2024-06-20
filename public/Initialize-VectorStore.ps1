@@ -59,7 +59,7 @@ function Initialize-VectorStore {
 
             while ($vectorstore.status -ne 'completed') {
                 Start-Sleep -Seconds 1
-                $vectorStore = Get-VectorStore -VectorStoreId $vectorStore.id
+                $vectorStore = PSOpenAI\Get-VectorStore -VectorStoreId $vectorStore.id
                 Write-Verbose "Waiting for vector store to be ready...(file_counts are completed). Current status: $($vectorstore.status)"
             }
 
@@ -121,8 +121,17 @@ function Initialize-VectorStore {
 
                 Write-Verbose "Uploading $($commandfiles.Count) files"
 
+                if (-not $commandfiles) {
+                    $script:nohelp = $true
+                    $null = PSOpenAI\Remove-VectorStore -VectorStoreId $vectorStore.id -ErrorAction SilentlyContinue
+                    continue
+                } else {
+                    $script:nohelp = $false
+                }
+
                 $uploads = Get-ChildItem $commandfiles | PSOpenAI\Add-OpenAIFile -Purpose "assistants"
                 $filebatch = PSOpenAI\Start-VectorStoreFileBatch -VectorStore $vectorStore -FileId $uploads.id
+
                 # Define the parameters for splatting
                 $splats = @{
                     VectorStoreId = $vectorStore.id

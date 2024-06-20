@@ -133,14 +133,18 @@ PSHelp.Copilot provides several commands to manage module assistants:
 Here are a few examples of how to use these commands:
 
 ```powershell
-# Create a new assistant for the Microsoft.PowerShell.Management module
-New-ModuleAssistant -Module Microsoft.PowerShell.Management
+# Create a new assistant for the Universal module
+New-ModuleAssistant -Module Universal
 
-# Remove an assistant by its ID
-Remove-ModuleAssistant -Id asst_LDBDlXhNhXfWcTFIWCovjSee
+# Remove a module assistant as filtered by selections in out-gridview
+Get-ModelAssistant | Out-GridView -Passthru | Remove-ModuleAssistant
 
 # Set the default assistant for the dbatools module
-Set-ModuleAssistant -Module dbatools -AssistantName "dbatools helper"
+# This will use dbatools Copilot
+Set-ModuleAssistant -Module dbatools
+
+# Set the default assistant to an assistant with a non-default name
+Set-ModuleAssistant -AssistantName "PSU helper"
 ```
 
 ### Creating CustomGPTs without API Assistants
@@ -176,17 +180,17 @@ For more information about PSOpenAI and its features, refer to the [PSOpenAI REA
 Here are a few examples of how you can use PSHelp.Copilot:
 
 ```powershell
-# Create an assistant for the Microsoft.PowerShell.Management module
-New-ModuleAssistant -Module Microsoft.PowerShell.Management
+# Create an assistant for the Universal module
+New-ModuleAssistant -Module Universal
 
-# Ask a question about copying files
-askhelp how can I copy files recursively?
+# Ask a question about full-width setting
+askhelp How do I show a modal with a full-width setting?
 
-# Ask a question about removing items
-Invoke-HelpChat -Message "How do I remove a directory and all its contents?"
+# Ask a question about dark theme
+Invoke-HelpChat -Message "How can I display a toast message with a dark theme?"
 
-# Ask a question using the custom assistant
-Invoke-HelpChat "How can I manage processes?"
+# Ask a question and get additional information as an object
+Invoke-HelpChat "How can I define a grid layout with draggable and resizable components?" -As PSObject
 ```
 
 ## Configuration

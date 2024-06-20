@@ -148,6 +148,10 @@ function New-ModuleAssistant {
                 $vectorinfo = $moduleName | Initialize-VectorStore
             }
 
+            if ($script:nohelp) {
+                Write-Warning "Something went wrong :/ It's probably a module without any help."
+                continue
+            }
             # if still no vectorinfo.id, loop until it is found or 10 seconds pass
             $count = 0
             while (-not $vectorinfo.id -and $count -lt 10) {
