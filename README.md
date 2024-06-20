@@ -238,10 +238,6 @@ When importing the PSHelp.Copilot module, it automatically checks for a persiste
 
 5. **Region Availability**: Azure OpenAI services may not be available in all Azure regions. Ensure you're using a supported region for your deployment.
 
-# Todo
-
-* Create tests with RAG pipeline
-
 # Example Instructions for CustomGPTs
 
 The following example shows the instructions you can use when creating CustomGPTs with the `Split-ModuleHelp` command, specifically tailored for the dbatools module. These instructions are the same as those used with the `New-Assistant` command when creating module assistants:
@@ -328,3 +324,7 @@ Test-DbaPath -SqlInstance sql01  -Path C:\temp
 Test-Dbapath -SqlINstance sql01 -Path "C:\temp\spaces require\quotes\for example"
 \```
 ```
+
+# Todo
+
+* Create tests with RAG pipeline
