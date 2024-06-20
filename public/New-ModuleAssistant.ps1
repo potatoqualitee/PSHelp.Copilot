@@ -123,7 +123,6 @@ function New-ModuleAssistant {
             $assistant = $AssistantName -replace '--MODULENAME--', $moduleName
 
             if ($Force) {
-                Write-Verbose "Removing existing assistant: $assistant"
                 $rmassistant = Get-ModuleAssistant -WarningAction SilentlyContinue | Where-Object Name -eq $assistant
                 if ($rmassistant) {
                     Write-Warning "Removing existing assistant: $assistant"

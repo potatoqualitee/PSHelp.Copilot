@@ -255,10 +255,10 @@ This command will return the persisted configuration from the JSON file.
 
 ### Resetting OpenAI Provider Configuration
 
-If you need to reset the OpenAI provider configuration, you can use the `Reset-OpenAIProvider` command:
+If you need to reset the OpenAI provider configuration, you can use the `Clear-OpenAIProvider` command:
 
 ```powershell
-Reset-OpenAIProvider
+Clear-OpenAIProvider
 ```
 
 This command will remove the persisted configuration file and clear the relevant entries from `$PSDefaultParameterValues`, effectively resetting the configuration to its default state.

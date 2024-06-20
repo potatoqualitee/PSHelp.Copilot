@@ -72,8 +72,22 @@ function Set-OpenAIProvider {
         if (-not $AuthType) {
             $AuthType = if ($ApiType -eq 'Azure') { 'Azure' } else { 'OpenAI' }
         }
+
         if (-not $ApiKey) {
             $ApiKey = Get-ApiKey -PlainText
+        }
+        if ($global:OPENAI_API_KEY) {
+            Write-Verbose "Removing OPENAI_API_KEY from global scope."
+            $null = Remove-Variable -Name OPENAI_API_KEY -Scope Global -Force
+        }
+        if ($env:OPENAI_API_KEY) {
+            Write-Verbose "Removing OPENAI_API_KEY from environment."
+            $null = Remove-Variable -Name OPENAI_API_KEY -Scope Environment -Force
+        }
+        $defaults = Get-Variable -Name PSDefaultParameterValues -Scope Global -ValueOnly
+        if ($defaults["*:ApiKey"]) {
+            Write-Warning "Removing default ApiKey from PSDefaultParameterValues."
+            $null = $defaults.Remove("*:ApiKey")
         }
 
         if ($ApiType -eq 'Azure') {
@@ -100,7 +114,7 @@ function Set-OpenAIProvider {
             # Set context for OpenAI
             $splat = @{
                 ApiType  = 'OpenAI'
-                AuthType = $AuthType
+                AuthType = 'OpenAI'
                 ApiKey   = $ApiKey
             }
         }
