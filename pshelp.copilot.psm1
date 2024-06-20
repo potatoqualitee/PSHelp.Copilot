@@ -38,7 +38,7 @@ foreach ($function in (Get-ChildItem "$ModuleRoot\public" -Filter "*.ps1" -Recur
 
 Set-Alias -Name askhelp -Value Invoke-HelpChat
 
-$configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
+$configFile = Join-Path -Path $script:configdir -ChildPath config.json
 
 if (Test-Path -Path $configFile) {
     $persisted = Get-Content -Path $configFile -Raw | ConvertFrom-Json
