@@ -5,12 +5,16 @@ function Clear-OpenAIProvider {
 
     .DESCRIPTION
         The Clear-OpenAIProvider function clears the OpenAI provider configuration by removing the persisted configuration file and resetting the module-scoped configuration object.
+
         It removes the persisted configuration file, if it exists, and clears the PSDefaultParameterValues object to its default values.
 
-    .EXAMPLE
-        Clear-OpenAIProvider
+        This function also removes any environment variables and global scope variables related to the OpenAI provider.
 
-        This example clears the OpenAI provider configuration.
+    .EXAMPLE
+        PS C:\> Clear-OpenAIProvider
+
+        This example clears the OpenAI provider configuration, removing any persisted configuration files and resetting the environment and global scope variables.
+
     #>
     [CmdletBinding()]
     param ()
@@ -42,7 +46,7 @@ function Clear-OpenAIProvider {
     }
     $defaults = Get-Variable -Name PSDefaultParameterValues -Scope Global -ValueOnly
     if ($defaults["*:ApiKey"]) {
-        Write-Warning "Removing default ApiKey from PSDefaultParameterValues."
+        Write-Verbose "Removing default ApiKey from PSDefaultParameterValues."
         $null = $defaults.Remove("*:ApiKey")
     }
     Write-Verbose "OpenAI provider configuration reset to default."

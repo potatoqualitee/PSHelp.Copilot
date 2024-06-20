@@ -58,6 +58,7 @@
         'Clear-OpenAIProvider',
         'Save-LocalVectorStore',
         'Set-OpenAIProvider',
+        'Set-ModuleAssistant',
         'Split-ModuleHelp'
     )
 

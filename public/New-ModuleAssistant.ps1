@@ -1,87 +1,94 @@
 function New-ModuleAssistant {
     <#
-    .SYNOPSIS
-        Creates a new module assistant with specified configurations.
+.SYNOPSIS
+    Creates a new module assistant with specified configurations.
 
-    .DESCRIPTION
-        This function creates a new module assistant using the provided module details.
-        It allows setting a custom assistant name, model type, vector store, instructions,
-        and description. The function can also force the recreation of the assistant and
-        associated vector store if needed.
+.DESCRIPTION
+    This function creates a new module assistant using the provided module details. It allows setting a custom assistant name, model type, vector store, instructions, and description. The function can also force the recreation of the assistant and associated vector store if needed.
 
-    .PARAMETER Module
-        The module(s) for which the assistant is created. Accepts an array of PSObject,
-        which can include module names.
+    The command also sets the default Module parameter values for Invoke-HelpChat and askhelp to the provided module name.
 
-    .PARAMETER AssistantName
-        The name of the assistant to be created. Defaults to --MODULENAME-- Copilot,
-        where --MODULENAME-- is replaced with the actual module name.
+.PARAMETER Module
+    The module(s) for which the assistant is created. Accepts an array of PSObject, which can include module names.
 
-    .PARAMETER Description
-        A description for the assistant. If not provided, defaults to
-        Chatbot assistant for the <ModuleName> PowerShell module v<ModuleVersion>.
+.PARAMETER AssistantName
+    The name of the assistant to be created.
 
-    .PARAMETER Model
-        The model type to be used for the assistant. Defaults to gpt-4o.
+    Default: "--MODULENAME-- Copilot" (--MODULENAME-- is replaced with the actual module name)
 
-    .PARAMETER Instructions
-        Custom instructions for the assistant. If not provided, it reads from
-        instructions.md in the module root directory.
+.PARAMETER Description
+    A description for the assistant.
 
-    .PARAMETER AdditionalInstructions
-        Additional instructions to be appended to the default instructions.
+    Default: "Chatbot assistant for the <ModuleName> PowerShell module v<ModuleVersion>"
 
-    .PARAMETER VectorStore
-        The name of the vector store to be used. If not provided, defaults to
-        <ModuleName> v<ModuleVersion>.
+.PARAMETER Model
+    The model type to be used for the assistant.
 
-    .PARAMETER Force
-        A switch to force the recreation of the assistant and the associated vector store if they already exist.
+    Default:
+    - OpenAI API: "gpt-4o"
+    - Azure API: The deployment name
 
-    .EXAMPLE
-        PS C:\> New-ModuleAssistant -Module dbatools -AssistantName "dbatools Copilot" -Model gpt-4o
+.PARAMETER Instructions
+    Custom instructions for the assistant.
 
-        Creates a new assistant named "dbatools Copilot" for the dbatools PowerShell module
-        using the gpt-4o model.
+    Default: Reads from instructions.md in the module root directory
 
-    .EXAMPLE
-        PS C:\> New-ModuleAssistant -Module dbatools -VectorStore CustomVectorStore
+.PARAMETER AdditionalInstructions
+    Additional instructions to be appended to the default instructions.
 
-        Creates a new assistant for the dbatools PowerShell module using a custom vector
-        store named CustomVectorStore.
+.PARAMETER VectorStore
+    The name of the vector store to be used.
 
-    .EXAMPLE
-        PS C:\> New-ModuleAssistant -Module PSOpenAI -Instructions "Use these custom instructions."
+    Default: "<ModuleName> v<ModuleVersion>"
 
-        Creates a new assistant for the PSOpenAI PowerShell module with custom instructions
-        provided directly in the parameter.
+    Note: If the specified vector store does not exist, the function runs Initialize-VectorStore to create it.
 
-    .EXAMPLE
-        PS C:\> $splat = @{
-            Module               = "PSOpenAI"
-            AssistantName        = "PSOpenAI Assistant"
-            Description          = "Custom description for the assistant."
-            AdditionalInstructions = "Please provide more detailed explanations when responding to questions."
-            Force                = $true
-        }
-        PS C:\> New-ModuleAssistant @splat
+.PARAMETER Force
+    A switch to force the recreation of the assistant and the associated vector store if they already exist.
 
-        Forces the recreation of the assistant named "PSOpenAI Assistant" for the
-        PSOpenAI PowerShell module with a custom description and additional instructions.
+    Note: If used, the function removes any existing assistant with the same name before creating a new one.
 
-    .EXAMPLE
-       PS C:\> $splat = @{
-           Module                = "dbatools"
-           AssistantName         = "dbatools helper"
-           Description           = "Chatbot assistant for the dbatools PowerShell module."
-           AdditionalInstructions = "The proper name is dbatools NOT DBATools. Your data was last updated on April 12, 2024. You use Splats when commands get too long and only use single quotes as parameter values when required."
-           Force                 = $true
-       }
-       PS C:\> New-ModuleAssistant @splat
+.NOTES
+    - The function waits up to 10 seconds for the vector store to be created before throwing an error if it cannot be found.
 
-       Creates a new assistant named "dbatools helper" for the dbatools PowerShell module
-       with a custom description and additional instructions, forcing the recreation of
-       the assistant and the associated vector store if they already exist.
+.EXAMPLE
+    PS C:\> New-ModuleAssistant -Module dbatools -AssistantName "dbatools Copilot" -Model gpt-4o
+
+    Creates a new assistant named "dbatools Copilot" for the dbatools PowerShell module using the gpt-4o model.
+
+.EXAMPLE
+    PS C:\> New-ModuleAssistant -Module dbatools -VectorStore CustomVectorStore
+
+    Creates a new assistant for the dbatools PowerShell module using a custom vector store named CustomVectorStore.
+
+.EXAMPLE
+    PS C:\> New-ModuleAssistant -Module PSOpenAI -Instructions "Use these custom instructions."
+
+    Creates a new assistant for the PSOpenAI PowerShell module with custom instructions provided directly in the parameter.
+
+.EXAMPLE
+    PS C:\> $splat = @{
+        Module               = "PSOpenAI"
+        AssistantName        = "PSOpenAI Assistant"
+        Description          = "Custom description for the assistant."
+        AdditionalInstructions = "Please provide more detailed explanations when responding to questions."
+        Force                = $true
+    }
+    PS C:\> New-ModuleAssistant @splat
+
+    Forces the recreation of the assistant named "PSOpenAI Assistant" for the PSOpenAI PowerShell module with a custom description and additional instructions.
+
+.EXAMPLE
+   PS C:\> $splat = @{
+       Module                = "dbatools"
+       AssistantName         = "dbatools helper"
+       Description           = "Chatbot assistant for the dbatools PowerShell module."
+       AdditionalInstructions = "The proper name is dbatools NOT DBATools. Your data was last updated on April 12, 2024. You use Splats when commands get too long and only use single quotes as parameter values when required."
+       Force                 = $true
+   }
+   PS C:\> New-ModuleAssistant @splat
+
+   Creates a new assistant named "dbatools helper" for the dbatools PowerShell module with a custom description and additional instructions, forcing the recreation of the assistant and the associated vector store if they already exist.
 #>
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]

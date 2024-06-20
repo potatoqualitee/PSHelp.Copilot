@@ -1,34 +1,37 @@
 function Set-OpenAIProvider {
     <#
     .SYNOPSIS
-    Sets the OpenAI provider configuration.
+        Configures the OpenAI or Azure OpenAI service context for subsequent commands.
 
     .DESCRIPTION
-    The Set-OpenAIProvider function sets the OpenAI provider configuration and optionally persists it to a configuration file.
+        This command sets the necessary context for interacting with either the OpenAI or Azure OpenAI service.
+        It sets the API key, API base, deployment, authentication type, and other parameters required for the service.
+
+        The configuration can be persisted to a file for future use.
 
     .PARAMETER ApiKey
-    The API key for the OpenAI provider.
+        The API key for accessing the OpenAI or Azure OpenAI service.
 
     .PARAMETER ApiBase
-    The base URL for the Azure OpenAI resource.
+        The base URL for the API. Required for Azure OpenAI service.
 
     .PARAMETER Deployment
-    The deployment name for the Azure OpenAI resource.
+        The deployment or model name used for the Azure OpenAI service.
 
     .PARAMETER ApiType
-    The provider type (either "OpenAI" or "Azure").
+        Specifies the type of API to be used. Valid values are 'OpenAI' and 'Azure'.
 
     .PARAMETER ApiVersion
-    The API version for the Azure OpenAI resource.
+        Specifies the version of the API to be used. Required for Azure OpenAI service.
 
     .PARAMETER AuthType
-    The authentication type (either "openai" or "azure").
+        Specifies the type of authentication to be used. Valid values are 'openai', 'azure', 'azure_ad'.
 
     .PARAMETER Organization
-    The organization associated with the OpenAI provider.
+        The organization name for the OpenAI service.
 
     .PARAMETER NoPersist
-    A switch parameter that determines whether to skip persisting the configuration to a file.
+        When specified, the configuration is not persisted to a file.
 
     .EXAMPLE
     $config = @{
@@ -76,19 +79,7 @@ function Set-OpenAIProvider {
         if (-not $ApiKey) {
             $ApiKey = Get-ApiKey -PlainText
         }
-        if ($global:OPENAI_API_KEY) {
-            Write-Verbose "Removing OPENAI_API_KEY from global scope."
-            $null = Remove-Variable -Name OPENAI_API_KEY -Scope Global -Force
-        }
-        if ($env:OPENAI_API_KEY) {
-            Write-Verbose "Removing OPENAI_API_KEY from environment."
-            $null = Remove-Variable -Name OPENAI_API_KEY -Scope Environment -Force
-        }
-        $defaults = Get-Variable -Name PSDefaultParameterValues -Scope Global -ValueOnly
-        if ($defaults["*:ApiKey"]) {
-            Write-Warning "Removing default ApiKey from PSDefaultParameterValues."
-            $null = $defaults.Remove("*:ApiKey")
-        }
+        $null = Clear-OpenAIProvider
 
         if ($ApiType -eq 'Azure') {
             # Set context for Azure
