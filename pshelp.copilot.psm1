@@ -64,19 +64,8 @@ if (Test-Path -Path $configFile) {
     if ($persisted.Organization) {
         $splat.Organization = $persisted.Organization
     }
-
-} elseif ($env:OPENAI_API_TYPE) {
-    $splat = @{
-        ApiKey       = $env:OPENAI_API_KEY
-        ApiBase      = $env:OPENAI_API_BASE
-        Deployment   = $env:OPENAI_AZURE_DEPLOYMENT
-        ApiType      = $env:OPENAI_API_TYPE
-        ApiVersion   = $env:OPENAI_API_VERSION
-        AuthType     = if ($env:OPENAI_API_TYPE -match 'azure') { 'azure' } else { 'openai' }
-        Organization = $env:OPENAI_AZURE_ORGANIZATION
-    }
+    $null = Set-OpenAIProvider @splat
 }
-$null = Set-OpenAIProvider @splat
 
 $PSDefaultParameterValues['Import-Module:Verbose'] = $false
 $PSDefaultParameterValues['Add-Type:Verbose'] = $false

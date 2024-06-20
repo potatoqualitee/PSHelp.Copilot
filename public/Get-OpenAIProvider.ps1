@@ -11,6 +11,9 @@ function Get-OpenAIProvider {
     .PARAMETER Persisted
         A switch parameter that determines whether to retrieve only the persisted configuration. By default, the function retrieves the session configuration.
 
+    .PARAMETER PlainText
+        A switch parameter that determines whether to return the API key in plain text. By default, the function masks the API key.
+
     .EXAMPLE
         Get-OpenAIProvider
 
@@ -23,10 +26,11 @@ function Get-OpenAIProvider {
     #>
     [CmdletBinding()]
     param(
-        [switch]$Persisted
+        [switch]$Persisted,
+        [switch]$PlainText
     )
 
-    $configFile = Join-Path -Path $script:configdir -ChildPath "config.json"
+    $configFile = Join-Path -Path $script:configdir -ChildPath config.json
 
     if ($Persisted) {
         if (Test-Path -Path $configFile) {
@@ -40,10 +44,20 @@ function Get-OpenAIProvider {
             if ($context.ApiKey) {
                 $decryptedkey = Get-DecryptedString -SecureString $context.ApiKey
                 if ($decryptedkey) {
-                    $maskedkey = Get-MaskedString -Source $decryptedkey -First $first -Last 2 -MaxNumberOfAsterisks 45
+                    $splat = @{
+                        Source               = $decryptedkey
+                        First                = $first
+                        Last                 = 2
+                        MaxNumberOfAsterisks = 45
+                    }
+                    $maskedkey = Get-MaskedString @splat
                 } else {
                     $maskedkey = $null
                 }
+            }
+
+            if ($PlainText) {
+                $maskedkey = $decryptedkey
             }
 
             [pscustomobject]@{

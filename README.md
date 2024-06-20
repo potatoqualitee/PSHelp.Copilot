@@ -1,6 +1,6 @@
 # PSHelp.Copilot
 
-PSHelp.Copilot is a PowerShell module that simplifies interaction with well-documented PowerShell modules using natural language. By leveraging OpenAI's powerful language models, it converts PowerShell help documentation into an intuitive format, allowing you to ask questions and receive relevant answers and code examples based on the module's commands.
+PSHelp.Copilot is a PowerShell module that simplifies getting help from well-documented PowerShell modules, all using natural language and OpenAI.
 
 To use PSHelp.Copilot, you'll need an OpenAI API key, which can be obtained by signing up for an account with OpenAI or through an OpenAI-powered service like Azure OpenAI Services.
 
@@ -11,27 +11,24 @@ To use PSHelp.Copilot, you'll need an OpenAI API key, which can be obtained by s
 - Get relevant answers and code examples based on the module's documentation
 - Seamlessly integrate with OpenAI's API using the PSOpenAI module
 - Create CustomGPTs with up to 20 files for modules without assistants
+- Support for Azure OpenAI services
 
 ## Prerequisites
 
 To use PSHelp.Copilot, you need to have the following:
 
 - PowerShell 5.1 or higher
-- An OpenAI API key (sign up at https://platform.openai.com/account/api-keys)
+- An OpenAI API key (sign up at https://platform.openai.com/account/api-keys) or an Azure OpenAI API key
 
 ## Setup
 
 1. Install the PSHelp.Copilot module:
 
-   ```powershell
    Install-Module -Name PSHelp.Copilot
-   ```
 
 2. Set your OpenAI API key as an environment variable:
 
-   ```powershell
    $env:OPENAI_API_KEY = 'your_api_key_here'
-   ```
 
 ## Usage
 
@@ -50,15 +47,14 @@ This will create an assistant named "dbatools Copilot" for the `dbatools` module
 To chat with a module assistant, use the `Invoke-HelpChat` command or its alias `askhelp`:
 
 ```powershell
-$PSDefaultParameterValues['Invoke-HelpChat:Module'] = 'dbatools'
+Set-ModuleAssistant -Module dbatools
 askhelp which command can i use to encrypt a database
 ```
 
-You can also use the actual `Invoke-HelpChat` command:
+You can also use the actual `Invoke-HelpChat` command and return an object that has detailed query information:
 
 ```powershell
-$PSDefaultParameterValues['Invoke-HelpChat:AssistantName'] = 'dbatools Copilot'
-Invoke-HelpChat "How do I backup a database?"
+Invoke-HelpChat "How do I backup a database?" -As PSObject
 ```
 
 By setting the default value for the `Module` or `AssistantName` parameter, you can omit it when calling `Invoke-HelpChat`. The assistant will provide relevant answers based on the module's documentation.
@@ -76,7 +72,7 @@ To set the OpenAI provider for PSHelp.Copilot, use the `Set-OpenAIProvider` comm
 ```powershell
 $splat = @{
     Provider   = "Azure"
-    ApiKey     = "your-azure-api-key"
+    ApiKey     = "abcd1234efgh5678ijkl9012mnop3456"
     ApiBase    = "https://your-azure-endpoint.openai.azure.com/"
     Deployment = "your-deployment-name"
 }
@@ -88,30 +84,123 @@ This command configures the PowerShell session to use Azure OpenAI services with
 You can also set the provider to OpenAI:
 
 ```powershell
-Set-OpenAIProvider -Provider OpenAI -ApiKey "your-openai-api-key"
+Set-OpenAIProvider -Provider OpenAI -ApiKey sk-abcdefghijklmno1234567890pqrstuvwxyz
 ```
 
 This command configures the session to use OpenAI's services with the provided API key.
 
-By default, `Set-OpenAIProvider` uses `$PSDefaultParameterValues` to store the configuration. If you prefer to use environment variables, you can use the `-UseEnvironmentVariables` switch:
+### Managing Module Assistants
+
+PSHelp.Copilot provides several commands to manage module assistants:
+
+- `New-ModuleAssistant`: Creates a new module assistant with specified configurations.
+- `Remove-ModuleAssistant`: Removes a module assistant based on its unique ID.
+- `Set-ModuleAssistant`: Sets the default module assistant for a specified module.
+
+Here are a few examples of how to use these commands:
 
 ```powershell
-Set-OpenAIProvider -Provider Azure -ApiKey "your-azure-api-key" -ApiBase "https://your-azure-endpoint.openai.azure.com/" -Deployment "your-deployment-name" -UseEnvironmentVariables
+# Create a new assistant for the Microsoft.PowerShell.Management module
+New-ModuleAssistant -Module Microsoft.PowerShell.Management
+
+# Remove an assistant by its ID
+Remove-ModuleAssistant -Id asst_LDBDlXhNhXfWcTFIWCovjSee
+
+# Set the default assistant for the dbatools module
+Set-ModuleAssistant -Module dbatools -AssistantName "dbatools helper"
 ```
 
-This command sets the configuration using environment variables instead of `$PSDefaultParameterValues`.
+### Creating CustomGPTs without API Assistants
 
-### Creating CustomGPTs without Assistants
+If you don't want to create an assistant but still want to leverage Custom GPTs for a module, you can use the `Split-ModuleHelp` command to split the module's help into up to 20 files:
 
-If you don't want to create an assistant but still want to leverage CustomGPTs for a module, you can use the `Split-ModuleHelp` command to split the module's help into up to 20 files:
-
-```powershell
 Split-ModuleHelp -Module dbatools -OutputPath C:\temp\dbatools-help
-```
 
 This will split the help content of the `dbatools` module into 20 files (the default) and save them in the `C:\temp\dbatools-help` directory.
 
-You can then use the generated files to create a CustomGPT by providing the necessary instructions. The instructions can be found in the `instructions.md` file included with PSHelp.Copilot, or you can use the example provided specifically for dbatools:
+You can then use the generated files to create a CustomGPT by providing the necessary instructions. The instructions can be found in the `instructions.md` file included with PSHelp.Copilot, or you can use the example provided specifically for dbatools.
+
+### Integration with PSOpenAI
+
+PSHelp.Copilot seamlessly integrates with the PSOpenAI module, which provides a PowerShell interface to OpenAI's API. Make sure to set your OpenAI API key as an environment variable (`$env:OPENAI_API_KEY`) or configure the provider using `Set-OpenAIProvider` before using PSHelp.Copilot.
+
+Or with Azure:
+
+```powershell
+$splat = @{
+    Provider   = "Azure"
+    ApiKey     = "abcd1234efgh5678ijkl9012mnop3456"
+    ApiBase    = "https://your-azure-endpoint.openai.azure.com/"
+    Deployment = "your-deployment-name"
+}
+Set-OpenAIProvider @splat
+```
+
+For more information about PSOpenAI and its features, refer to the [PSOpenAI README](https://github.com/mkht/PSOpenAI).
+
+## Examples
+
+Here are a few examples of how you can use PSHelp.Copilot:
+
+```powershell
+# Create an assistant for the Microsoft.PowerShell.Management module
+New-ModuleAssistant -Module Microsoft.PowerShell.Management
+
+# Ask a question about copying files
+askhelp how can I copy files recursively?
+
+# Ask a question about removing items
+Invoke-HelpChat -Message "How do I remove a directory and all its contents?"
+
+# Ask a question using the custom assistant
+Invoke-HelpChat "How can I manage processes?"
+```
+
+## Configuration
+
+PSHelp.Copilot provides additional configuration options to enhance the user experience and make it easier to manage OpenAI provider settings.
+
+### Persisting OpenAI Provider Configuration
+
+You can persist the OpenAI provider configuration to a JSON file using the `Set-OpenAIProvider` command with the `-NoPersist` switch. This allows you to save the configuration for future sessions without having to set it every time.
+
+To persist the configuration, simply use `Set-OpenAIProvider` without the `-NoPersist` switch:
+
+```powershell
+Set-OpenAIProvider -Provider OpenAI -ApiKey "your-openai-api-key"
+```
+
+This command will save the configuration to a JSON file in the module's configuration directory.
+
+To retrieve the persisted configuration, use the `Get-OpenAIProvider` command with the `-Persisted` switch:
+
+```powershell
+Get-OpenAIProvider -Persisted
+```
+
+This command will return the persisted configuration from the JSON file.
+
+### Resetting OpenAI Provider Configuration
+
+If you need to reset the OpenAI provider configuration, you can use the `Clear-OpenAIProvider` command:
+
+```powershell
+Clear-OpenAIProvider
+```
+
+This command will remove the persisted configuration file and clear the relevant entries from `$PSDefaultParameterValues`, `$global` and `$env:`, effectively resetting the configuration to a cleared state.
+
+### Automatic Configuration on Module Import
+
+When importing the PSHelp.Copilot module, it automatically checks for a persisted configuration file. If found, it sets the OpenAI provider configuration accordingly. If no persisted configuration is found, it checks for environment variables and sets the configuration based on those.
+
+# Todo
+
+* Create tests with RAG pipeline
+
+# Example Instructions for CustomGPTs
+
+The following example shows the instructions you can use when creating CustomGPTs with the `Split-ModuleHelp` command, specifically tailored for the dbatools module. These instructions are the same as those used with the `New-Assistant` command when creating module assistants:
 
 ```markdown
 You are a friendly chatbot providing support for dbatools v2.1.13.
@@ -195,80 +284,3 @@ Test-DbaPath -SqlInstance sql01  -Path C:\temp
 Test-Dbapath -SqlINstance sql01 -Path "C:\temp\spaces require\quotes\for example"
 \```
 ```
-
-### Integration with PSOpenAI
-
-PSHelp.Copilot seamlessly integrates with the PSOpenAI module, which provides a PowerShell interface to OpenAI's API. Make sure to set your OpenAI API key as an environment variable (`$env:OPENAI_API_KEY`) before using PSHelp.Copilot.
-
-For more information about PSOpenAI and its features, refer to the [PSOpenAI README](https://github.com/mkht/PSOpenAI/blob/main/README.md).
-
-## Examples
-
-Here are a few examples of how you can use PSHelp.Copilot:
-
-```powershell
-# Create an assistant for the Microsoft.PowerShell.Management module
-New-ModuleAssistant -Module Microsoft.PowerShell.Management
-
-# Set default values for Invoke-HelpChat parameters
-$PSDefaultParameterValues = @{
-    'Invoke-HelpChat:Module'  = 'Microsoft.PowerShell.Management'
-    'Invoke-HelpChat:AddHint' = $true
-}
-
-# Ask a question about copying files
-askhelp how can I copy files recursively?
-
-# Ask a question about removing items
-Invoke-HelpChat -Message "How do I remove a directory and all its contents?"
-
-# Set default value for AssistantName parameter
-$PSDefaultParameterValues['Invoke-HelpChat:AssistantName'] = 'dbatools helper'
-
-# Ask a question using the custom assistant
-Invoke-HelpChat "How can I manage processes?"
-```
-
-## Configuration
-
-PSHelp.Copilot provides additional configuration options to enhance the user experience and make it easier to manage OpenAI provider settings.
-
-### Persisting OpenAI Provider Configuration
-
-You can persist the OpenAI provider configuration to a JSON file using the `Set-OpenAIProvider` command with the `-NoPersist` switch. This allows you to save the configuration for future sessions without having to set it every time.
-
-To persist the configuration, simply use `Set-OpenAIProvider` without the `-NoPersist` switch:
-
-```powershell
-Set-OpenAIProvider -Provider OpenAI -ApiKey "your-openai-api-key"
-```
-
-This command will save the configuration to a JSON file in the module's configuration directory.
-
-To retrieve the persisted configuration, use the `Get-OpenAIProvider` command with the `-Persisted` switch:
-
-```powershell
-Get-OpenAIProvider -Persisted
-```
-
-This command will return the persisted configuration from the JSON file.
-
-### Resetting OpenAI Provider Configuration
-
-If you need to reset the OpenAI provider configuration, you can use the `Reset-OpenAIProvider` command:
-
-```powershell
-Reset-OpenAIProvider
-```
-
-This command will remove the persisted configuration file and clear the relevant entries from `$PSDefaultParameterValues`, effectively resetting the configuration to its default state.
-
-### Automatic Configuration on Module Import
-
-When importing the PSHelp.Copilot module, it automatically checks for a persisted configuration file. If found, it sets the OpenAI provider configuration accordingly. If no persisted configuration is found, it checks for environment variables and sets the configuration based on those.
-
-This behavior ensures that you have a seamless experience when using PSHelp.Copilot across different sessions and environments.
-
-# Todo
-
-* Create tests with RAG pipeline

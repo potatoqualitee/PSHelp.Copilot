@@ -55,9 +55,10 @@
         'Invoke-HelpChat',
         'New-ModuleAssistant',
         'Remove-ModuleAssistant',
-        'Reset-OpenAIProvider',
+        'Clear-OpenAIProvider',
         'Save-LocalVectorStore',
         'Set-OpenAIProvider',
+        'Set-ModuleAssistant',
         'Split-ModuleHelp'
     )
 

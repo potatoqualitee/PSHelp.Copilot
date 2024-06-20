@@ -21,6 +21,9 @@ function Invoke-HelpChat {
     .PARAMETER AddHint
         Adds embedding hints to the interaction, which can enhance the response quality.
 
+    .PARAMETER NoYell
+        Suppresses the "USE YOUR RETRIEVAL DOCUMENTS!!!" message that is appended to the user message.
+
     .EXAMPLE
         PS C:\> Invoke-HelpChat -Message "How do I backup a database?" -Module dbatools
 
@@ -68,7 +71,8 @@ function Invoke-HelpChat {
         [string]$AssistantName,
         [ValidateSet("String", "PSObject")]
         [string]$As = "String",
-        [switch]$AddHint
+        [switch]$AddHint,
+        [switch]$NoYell
     )
     begin {
         if (-not $Module -and -not $AssistantName) {
@@ -81,9 +85,11 @@ function Invoke-HelpChat {
             $AssistantName = "$Module Copilot"
         }
 
+        $hashkey = (Get-OpenAIProvider -PlainText).ApiKey + "-" + $AssistantName
+
         $embeddinghash = @{}
 
-        if (-not $script:threadcache[$AssistantName]) {
+        if (-not $script:threadcache[$hashkey]) {
             if ($AddHint) {
                 if (-not (Get-LocalVectorStoreFile -Module $Module)) {
                     Write-Warning "No local vector store found for $Module. Running first time setup..."
@@ -98,10 +104,10 @@ function Invoke-HelpChat {
                 assistant  = $null
                 embeddings = $embeddinghash
             }
-            $script:threadcache[$AssistantName] = $cacheobject
+            $script:threadcache[$hashkey] = $cacheobject
         } else {
-            $thread = $script:threadcache[$AssistantName].thread
-            $agent = $script:threadcache[$AssistantName].assistant
+            $thread = $script:threadcache[$hashkey].thread
+            $agent = $script:threadcache[$hashkey].assistant
             if ($AddHint) {
                 if (-not (Get-LocalVectorStoreFile -Module $Module)) {
                     Write-Warning "No local vector store found for $Module. Running first time setup..."
@@ -111,10 +117,10 @@ function Invoke-HelpChat {
                     $null = $embeddinghash.Add($embedding.Command, $embedding.Embedding)
                 }
             }
-            $script:threadcache[$AssistantName].embeddings = $embeddinghash
+            $script:threadcache[$hashkey].embeddings = $embeddinghash
         }
 
-        $thread = $script:threadcache[$AssistantName].thread
+        $thread = $script:threadcache[$hashkey].thread
         $totalMessages = $Message.Count
         $processedMessages = 0
         $sentence = @()
@@ -148,21 +154,21 @@ function Invoke-HelpChat {
                 if (-not $agent) {
                     throw "No assistant found with the name $AssistantName. You can create one using New-ModuleAssistant."
                 }
-                $script:threadcache[$AssistantName].assistant = $agent
+                $script:threadcache[$hashkey].assistant = $agent
             }
             Write-Progress -Status "Waiting for response" -PercentComplete ((2 / 10) * 100)
 
             if ($AddHint) {
                 Write-Verbose "Checking for embeddings in the vector store for $Module"
                 $queryEmbedding = (Request-Embeddings -Text $msg -Model text-embedding-3-small).data.embedding
-                $compare = Compare-Embedding -QueryEmbedding $queryEmbedding -Embeddings $script:threadcache[$AssistantName].embeddings -Top 5
+                $compare = Compare-Embedding -QueryEmbedding $queryEmbedding -Embeddings $script:threadcache[$hashkey].embeddings -Top 5
 
                 $msg = "## Retrieved Suggestions
                             $($compare.Command -join ', ')
 
                             ## User Question
                             $msg"
-            } else {
+            } elseif (-not $NoYell) {
                 # lol look, i'm desperate
                 $msg = $msg + "`r`nUSE YOUR RETRIEVAL DOCUMENTS!!!"
             }
@@ -194,6 +200,7 @@ function Invoke-HelpChat {
                     PromptTokens = $run.usage.prompt_tokens
                     Completion   = $run.usage.completion_tokens
                     TotalTokens  = $run.usage.total_tokens
+                    Response     = $response
                 }
             }
         }
