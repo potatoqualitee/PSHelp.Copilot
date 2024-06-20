@@ -7,11 +7,11 @@ Describe "PSHelp.Copilot Module" {
     Context "New-ModuleAssistant" {
         It "Should create a new module assistant" {
             # Create a module assistant for a test module
-            $assistantName = "TestModuleAssistant"
+            $assistantName = "Pester"
             New-ModuleAssistant -Module PSHelp.Copilot -AssistantName $assistantName
 
             # Check if the assistant was created successfully
-            $assistant = Get-Assistant | Where-Object { $_.Name -eq $assistantName }
+            $assistant = Get-Assistant | Where-Object { $PSItem.Name -eq $assistantName }
             $assistant | Should -Not -BeNullOrEmpty
         }
     }
@@ -42,7 +42,7 @@ Describe "PSHelp.Copilot Module" {
 
     AfterAll {
         # Clean up the created module assistant
-        Get-Assistant | Where-Object Name -match "TestModuleAssistant" | Remove-Assistant
+        Get-Assistant | Where-Object Name -match "Pester" | Remove-Assistant
         Get-Assistant | Where-Object Name -match "PSHelp.Copilot" | Remove-Assistant
     }
 }

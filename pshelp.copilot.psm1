@@ -36,6 +36,7 @@ foreach ($function in (Get-ChildItem "$ModuleRoot\public" -Filter "*.ps1" -Recur
     . Import-ModuleFile -Path $function.FullName
 }
 
+Set-Alias -Name Reset-OpenAIProvider -Value Clear-OpenAIProvider
 Set-Alias -Name askhelp -Value Invoke-HelpChat
 
 $configFile = Join-Path -Path $script:configdir -ChildPath config.json

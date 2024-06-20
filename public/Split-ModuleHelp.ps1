@@ -115,6 +115,8 @@ function Split-ModuleHelp {
         }
         Write-Progress @progressParams
 
+        $previousContent = ""
+
         if ($totalCount -le $FileCount -or $moduleName -eq 'PSHelp.Copilot') {
             # Output one file per command if the total count is less than or equal to FileCount
             foreach ($command in $commands) {
@@ -128,6 +130,10 @@ function Split-ModuleHelp {
                     if ($Filter) {
                         $helpContent = $helpContent | Where-Object $Filter
                     }
+                    if ($helpContent -eq $previousContent) {
+                        continue
+                    }
+                    $previousContent = $helpContent
                     $helpContent | Out-File -FilePath $outputFile -Encoding UTF8 -Force
                     Get-ChildItem $outputFile
                     Write-Verbose "Processed command: $($command.Name)"
@@ -146,6 +152,10 @@ function Split-ModuleHelp {
                 $outputFile = Join-Path -Path $OutputPath -ChildPath $file.Name
                 try {
                     $content = Get-Content -Path $file.FullName -Raw
+                    if ($content -eq $previousContent) {
+                        continue
+                    }
+                    $previousContent = $content
                     $content | Out-File -FilePath $outputFile -Encoding UTF8 -Force
                     Get-ChildItem $outputFile
                     Write-Verbose "Processed additional file: $($file.Name)"
@@ -165,7 +175,7 @@ function Split-ModuleHelp {
             # Process commands and additional files in batches
             for ($i = 0; $i -lt $FileCount; $i++) {
                 $startIndex = $i * $itemsPerFile
-                $endIndex = [math]::Min(($i + 1) * $itemsPerFile - 1, $totalCount - 1)
+                $endIndex = [math]::Min((($i + 1) * $itemsPerFile) - 1, $totalCount - 1)
 
                 $outputFile = Join-Path -Path $OutputPath -ChildPath "$moduleName-$($i + 1).txt"
 
@@ -194,11 +204,16 @@ function Split-ModuleHelp {
                 }
 
                 # Combine help content and additional file content
-                $combinedContent = @($helpContent) + @($additionalContent)
+                $combinedContent = @($helpContent) + @($additionalContent) -join "`n"
+
+                # Check if combined content is same as previous
+                if ($combinedContent -eq $previousContent) {
+                    continue
+                }
+                $previousContent = $combinedContent
 
                 # Check file size if MaxFileSizeKB is specified
                 if ($MaxFileSizeKB) {
-                    $combinedContent = $combinedContent -join "`n"
                     while ([System.Text.Encoding]::UTF8.GetByteCount($combinedContent) / 1KB -gt $MaxFileSizeKB) {
                         $combinedContent = $combinedContent.Substring(0, $combinedContent.LastIndexOf("`n"))
                     }

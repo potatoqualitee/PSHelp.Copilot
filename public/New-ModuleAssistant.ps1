@@ -110,7 +110,7 @@ function New-ModuleAssistant {
                 $Model = "gpt-4o"
             } else {
                 if (-not $provider.Deployment) {
-                    throw "Model is required for Azure API type."
+                    throw "Model (deployment) is required for Azure API type. Use Set-OpenAIProvider to get going."
                 }
                 $Model = $provider.Deployment
             }
