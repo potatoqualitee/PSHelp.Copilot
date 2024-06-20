@@ -29,8 +29,9 @@ PS> askhelp how do i encrypt all of my databases at once?
   - [Resetting OpenAI Provider Configuration](#resetting-openai-provider-configuration)
   - [Automatic Configuration on Module Import](#automatic-configuration-on-module-import)
 - [Azure FAQ](#azure-faq)
-- [Todo](#todo)
 - [Example Instructions for CustomGPTs](#example-instructions-for-customgpts)
+- [Custom GPTs made using PSHelp.Copilot](#custom-gpts-made-using-pshelpcopilot)
+- [Todo](#todo)
 
 ## Features
 
