@@ -52,11 +52,15 @@ To use PSHelp.Copilot, you need to have the following:
 
 1. Install the PSHelp.Copilot module:
 
-   Install-Module -Name PSHelp.Copilot
+```powershell
+Install-Module -Name PSHelp.Copilot
+```
 
 2. Set your OpenAI API key as an environment variable:
 
-   $env:OPENAI_API_KEY = 'your_api_key_here'
+```powershell
+$env:OPENAI_API_KEY = 'your_api_key_here'
+```
 
 ## Usage
 
