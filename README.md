@@ -245,7 +245,7 @@ When importing the PSHelp.Copilot module, it automatically checks for a persiste
 
 # Example Instructions for CustomGPTs
 
-The following example shows the instructions you can use when creating CustomGPTs with the `Split-ModuleHelp` command, specifically tailored for the dbatools module. These instructions are the same as those used with the `New-Assistant` command when creating module assistants. It's one I found in a []Microsoft repo](https://github.com/Azure-Samples/chat-with-your-data-solution-accelerator/blob/1b305b81fe058f2047c90fbbb7f1a5948f4224c3/infra/prompt-flow/cwyd/Prompt_variants.jinja2) and so far, it's the only one I've found that can force retrieval of documents more often than not.
+The following example shows the instructions you can use when creating CustomGPTs with the `Split-ModuleHelp` command, specifically tailored for the dbatools module. These instructions are the same as those used with the `New-Assistant` command when creating module assistants. It's one I found in a [Microsoft repo](https://github.com/Azure-Samples/chat-with-your-data-solution-accelerator/blob/1b305b81fe058f2047c90fbbb7f1a5948f4224c3/infra/prompt-flow/cwyd/Prompt_variants.jinja2) and so far, it's the only one I've found that can force retrieval of documents more often than not.
 
 ```markdown
 You are a friendly chatbot providing support for dbatools v2.1.13.
