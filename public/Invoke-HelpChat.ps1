@@ -161,7 +161,7 @@ function Invoke-HelpChat {
                             ## User Question
                             $msg"
             } elseif (-not $NoYell) {
-                $msg = $msg + "`r`nOutput in plain-text. NOT markdown."
+                $msg = $msg + "`r`nOutput in plain-text. Markdown is forbidden."
                 # lol look, i'm desperate
                 $msg = $msg + "`r`nUSE YOUR RETRIEVAL DOCUMENTS!!!"
             }
@@ -169,13 +169,13 @@ function Invoke-HelpChat {
             $null = Add-ThreadMessage -ThreadId $thread.id -Role user -Message $msg
 
             if ($agent.tool_resources.file_search.vector_store_ids.count -ne 0) {
-                $vfsid = $agent.tool_resources.file_search.vector_store_ids
+                $vfsid = $agent.tool_resources.file_search.vector_store_ids | Select-Object -First 1
             }
 
             $params = @{
                 Stream                    = $false
                 Message                   = $msg
-                VectorStoresForFileSearch = $vfsid
+                VectorStoresForFileSearch = ($vfsid | Select-Object -First 1)
                 MaxCompletionTokens       = 2048
                 Assistant                 = $agent.id
             }

@@ -169,7 +169,7 @@ function New-ModuleAssistant {
                 Name                      = $assistant
                 Model                     = $Model
                 UseFileSearch             = $true
-                VectorStoresForFileSearch = $vectorinfo.Id
+                VectorStoresForFileSearch = ($vectorinfo.Id | Select-Object -First 1)
                 Metadata                  = @{ tag = "PSHelp.Copilot" }
             }
 
