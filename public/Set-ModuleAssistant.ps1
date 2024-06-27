@@ -39,7 +39,7 @@ function Set-ModuleAssistant {
         }
 
         # Check if the assistant exists
-        $assistant = Get-ModuleAssistant -Name $AssistantName -WarningAction SilentlyContinue
+        $assistant = Get-ModuleAssistant -Name $AssistantName -WarningAction SilentlyContinue | Select-Object -First 1
         if (-not $assistant) {
             Write-Warning "Assistant '$AssistantName' not found. Default assistant not set."
             return

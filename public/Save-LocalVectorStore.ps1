@@ -60,7 +60,7 @@ function Save-LocalVectorStore {
                 $moduleVersion = $object.Version.ToString()
             } else {
                 $moduleName = $object
-                $moduleVersion = (Get-Module -Name $moduleName).Version.ToString()
+                $moduleVersion = (Get-Module -Name $moduleName | Select-Object -First 1).Version.ToString()
             }
             if (-not (Get-Module $moduleName)) {
                 $null = Import-Module $moduleName -ErrorAction SilentlyContinue
