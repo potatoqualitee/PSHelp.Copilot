@@ -76,10 +76,19 @@ function Set-OpenAIProvider {
             $AuthType = if ($ApiType -eq 'Azure') { 'Azure' } else { 'OpenAI' }
         }
 
+        if ($PSBoundParameters.Count -eq 1 -and $Deployment) {
+            Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
+            '*:Deployment' = $Deployment
+            '*:Model'      = $Deployment
+            }
+
+            Get-OpenAIProvider
+            return
+        }
+
         if (-not $ApiKey) {
             $ApiKey = Get-ApiKey -PlainText
         }
-        $null = Clear-OpenAIProvider
 
         if ($ApiType -eq 'Azure') {
             # Set context for Azure
@@ -104,9 +113,12 @@ function Set-OpenAIProvider {
         } else {
             # Set context for OpenAI
             $splat = @{
-                ApiType  = 'OpenAI'
-                AuthType = 'OpenAI'
-                ApiKey   = $ApiKey
+                ApiType      = 'OpenAI'
+                AuthType     = 'OpenAI'
+                ApiKey       = $ApiKey
+                ApiBase      = $null
+                ApiVersion   = $null
+                Organization = $null
             }
         }
         $null = Set-OpenAIContext @splat

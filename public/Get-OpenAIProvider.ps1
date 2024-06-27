@@ -80,7 +80,7 @@ function Get-OpenAIProvider {
                 ApiKey       = $maskedkey
                 AuthType     = $auth
                 ApiType      = $auth
-                Deployment   = $null
+                Deployment   = $PSDefaultParameterValues['*:Deployment']
                 ApiBase      = $null
                 ApiVersion   = $null
                 Organization = $null

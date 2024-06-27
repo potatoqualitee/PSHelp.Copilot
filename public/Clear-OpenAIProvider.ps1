@@ -49,6 +49,12 @@ function Clear-OpenAIProvider {
         Write-Verbose "Removing default ApiKey from PSDefaultParameterValues."
         $null = $defaults.Remove("*:ApiKey")
     }
+    if ($PSDefaultParameterValues["*:Deployment"]) {
+        Write-Verbose "Removing default Deployment from PSDefaultParameterValues."
+        $null = $PSDefaultParameterValues.Remove("*:Deployment")
+        $null = $PSDefaultParameterValues.Remove("*:Model")
+    }
+
     Write-Verbose "OpenAI provider configuration reset to default."
     Get-OpenAIProvider
 }

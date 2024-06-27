@@ -161,6 +161,7 @@ function Invoke-HelpChat {
                             ## User Question
                             $msg"
             } elseif (-not $NoYell) {
+                $msg = $msg + "`r`nOutput in plain-text. NOT markdown."
                 # lol look, i'm desperate
                 $msg = $msg + "`r`nUSE YOUR RETRIEVAL DOCUMENTS!!!"
             }

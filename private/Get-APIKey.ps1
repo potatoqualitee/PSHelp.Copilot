@@ -55,6 +55,8 @@ function Get-APIKey {
     elseif ($null -ne $env:OPENAI_API_KEY -and $env:OPENAI_API_KEY -is [string]) {
         $key = [string]$env:OPENAI_API_KEY
         Write-Verbose -Message 'API Key found in environment variable "OPENAI_API_KEY".'
+    } else {
+        Write-Verbose "API Key not found."
     }
 
     if ($key -is [securestring]) {

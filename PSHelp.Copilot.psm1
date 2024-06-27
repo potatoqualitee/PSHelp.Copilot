@@ -70,3 +70,7 @@ if (Test-Path -Path $configFile) {
 
 $PSDefaultParameterValues['Import-Module:Verbose'] = $false
 $PSDefaultParameterValues['Add-Type:Verbose'] = $false
+
+if (-not (Get-OpenAIProvider).ApiKey) {
+    Write-Warning "No API key found. Use Set-OpenAIProvider or `$env:OPENAI_API_KEY to set the API key."
+}
