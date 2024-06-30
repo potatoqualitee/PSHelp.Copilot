@@ -1,6 +1,6 @@
 using namespace System.Runtime.InteropServices
 
-function Get-MaskedString {
+function Get-MaskedKeyString {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -30,7 +30,7 @@ function Get-MaskedString {
 }
 
 # this is a modified function that surfaces the API key that PSOpenAI will use
-function Get-APIKey {
+function Get-ApiKey {
     [CmdletBinding()]
     [OutputType([securestring])]
     Param(
@@ -55,8 +55,6 @@ function Get-APIKey {
     elseif ($null -ne $env:OPENAI_API_KEY -and $env:OPENAI_API_KEY -is [string]) {
         $key = [string]$env:OPENAI_API_KEY
         Write-Verbose -Message 'API Key found in environment variable "OPENAI_API_KEY".'
-    } else {
-        Write-Verbose "API Key not found."
     }
 
     if ($key -is [securestring]) {
@@ -73,7 +71,7 @@ function Get-APIKey {
         }else {
             $first = 3
         }
-        Get-MaskedString -Source $key -First $first -Last 2 -MaxNumberOfAsterisks 45
+        Get-MaskedKeyString -Source $key -First $first -Last 2 -MaxNumberOfAsterisks 45
     } else {
         $null
     }
