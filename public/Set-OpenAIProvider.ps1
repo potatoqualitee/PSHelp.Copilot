@@ -71,17 +71,29 @@ function Set-OpenAIProvider {
         [string]$Organization,
         [switch]$NoPersist
     )
+    begin {
+        $PSDefaultParameterValues["*-Variable:Scope"] = 1
+        # Retrieve the current PSDefaultParameterValues
+        $defaultvalues = Get-Variable -Name PSDefaultParameterValues -ErrorAction SilentlyContinue
+
+        # Check if the variable exists, if not, initialize it as an empty hashtable
+        if (-not $defaultvalues) {
+            $currentDefaults = @{}
+        } else {
+            $currentDefaults = $defaultvalues.Value
+        }
+    }
     process {
         if (-not $AuthType) {
             $AuthType = if ($ApiType -eq 'Azure') { 'Azure' } else { 'OpenAI' }
         }
 
         if ($PSBoundParameters.Count -eq 1 -and $Deployment) {
-            Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
-            '*:Deployment' = $Deployment
-            '*:Model'      = $Deployment
-            }
+            $currentDefaults['*:Deployment'] = $Deployment
+            $currentDefaults['*:Model'] = $Deployment
 
+            # Set the updated PSDefaultParameterValues back
+            $null = Set-Variable -Name PSDefaultParameterValues -Value $currentDefaults -Force
             Get-OpenAIProvider
             return
         }
@@ -105,10 +117,11 @@ function Set-OpenAIProvider {
                 $splat.ApiVersion = $ApiVersion
             }
             if ($Deployment) {
-                Set-Variable -Scope 1 -Name PSDefaultParameterValues -Force -ErrorAction SilentlyContinue -Value @{
-                    '*:Deployment' = $Deployment
-                    '*:Model'      = $Deployment
-                }
+                $currentDefaults['*:Deployment'] = $Deployment
+                $currentDefaults['*:Model'] = $Deployment
+
+                # Set the updated PSDefaultParameterValues back
+                $null = Set-Variable -Name PSDefaultParameterValues -Value $currentDefaults -Force
             }
         } else {
             # Set context for OpenAI
@@ -122,6 +135,21 @@ function Set-OpenAIProvider {
             }
         }
         $null = Set-OpenAIContext @splat
+
+        # get context values to pass to Get-OpenAIAPIParameter
+        $context = Get-OpenAIContext
+        $currentDefaults['Get-OpenAIAPIParameter:Parameters'] = $script:defaultapiparms = @{
+            ApiKey        = $context.ApiKey
+            AuthType      = $context.AuthType
+            Organization  = $context.Organization
+            ApiBase       = $context.ApiBase
+            ApiVersion    = $context.ApiVersion
+            TimeoutSec    = $context.TimeoutSec
+            MaxRetryCount = $context.MaxRetryCount
+        }
+        $currentDefaults['Initialize-APIKey:ApiKey'] = $context.ApiKey
+
+        $null = Set-Variable -Name PSDefaultParameterValues -Value $currentDefaults -Force
 
         if (-not $NoPersist) {
             $configFile = Join-Path -Path $script:configdir -ChildPath config.json

@@ -33,33 +33,45 @@ function Get-OpenAIProvider {
     $configFile = Join-Path -Path $script:configdir -ChildPath config.json
 
     if ($Persisted) {
+        Write-Verbose "Persisted switch used. Retrieving persisted configuration."
         if (Test-Path -Path $configFile) {
+            Write-Verbose "Persisted configuration file found. Reading configuration."
             Get-Content -Path $configFile -Raw | ConvertFrom-Json
         } else {
             Write-Warning "No persisted configuration found."
         }
     } else {
+        Write-Verbose "Retrieving current session's OpenAI provider configuration."
         $context = Get-OpenAIContext
-        if ($context.ApiBase) {
+
+        if ($context.ApiKey) {
+            Write-Verbose "Context found. Processing configuration."
+
             if ($context.ApiKey) {
+                Write-Verbose "ApiKey found in context. Decrypting ApiKey."
                 $decryptedkey = Get-DecryptedString -SecureString $context.ApiKey
+
                 if ($decryptedkey) {
+                    Write-Verbose "ApiKey decrypted successfully. Masking ApiKey."
                     $splat = @{
                         Source               = $decryptedkey
                         First                = $first
                         Last                 = 2
                         MaxNumberOfAsterisks = 45
                     }
-                    $maskedkey = Get-MaskedString @splat
+                    $maskedkey = Get-MaskedKeyString @splat
                 } else {
+                    Write-Verbose "Failed to decrypt ApiKey."
                     $maskedkey = $null
                 }
             }
 
             if ($PlainText) {
+                Write-Verbose "PlainText switch used. Returning ApiKey in plain text."
                 $maskedkey = $decryptedkey
             }
 
+            Write-Verbose "Creating configuration object."
             [pscustomobject]@{
                 ApiKey       = $maskedkey
                 AuthType     = $context.AuthType
@@ -70,12 +82,18 @@ function Get-OpenAIProvider {
                 Organization = $context.Organization
             }
         } else {
+            Write-Verbose "No context found. Attempting to retrieve ApiKey from environment."
             $maskedkey = Get-ApiKey
+
             if ($maskedkey) {
+                Write-Verbose "ApiKey found in environment. Setting AuthType to 'openai'."
                 $auth = "openai"
             } else {
+                Write-Verbose "No ApiKey found. Setting AuthType to null."
                 $auth = $null
             }
+
+            Write-Verbose "Creating default configuration object."
             [pscustomobject]@{
                 ApiKey       = $maskedkey
                 AuthType     = $auth
